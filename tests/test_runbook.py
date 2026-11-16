@@ -20,9 +20,10 @@ class RunbookTest(unittest.TestCase):
         result = runbook.ask(self.index, 'terraform" OR ) -lock*')
         self.assertEqual(result["citations"], ["RB-PIPE-01"])
 
-    def test_portuguese_accent_matching(self):
-        result = runbook.ask(self.index, "Problema de resolução")
-        self.assertEqual(result["citations"], ["RB-DNS-01"])
+    def test_checkout_oomkilled_answer(self):
+        result = runbook.ask(self.index, "Checkout restarting with OOMKilled")
+        self.assertEqual(result["citations"], ["RB-K8S-01"])
+        self.assertIn("compare peak memory with the container limit", result["answer"])
 
     def test_offline_abstention_skips_model(self):
         with patch("runbook.generate") as generate:
@@ -49,6 +50,7 @@ class RunbookTest(unittest.TestCase):
         body = json.loads(request.data)
         self.assertFalse(body["stream"])
         self.assertIn("RB-DNS-01", body["prompt"])
+        self.assertIn("Always answer in US English (en-US)", body["system"])
 
     def test_invalid_citation_falls_back(self):
         payload = {"response": '{"answer":"An answer","source_ids":["RB-UNKNOWN"]}'}

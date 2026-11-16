@@ -2,7 +2,7 @@
   {
     "id": "RB-K8S-01",
     "title": "Checkout deployment enters CrashLoopBackOff",
-    "keywords": "checkout crashloopbackoff crashloop restarting restarts reiniciando oomkilled memory memoria",
+    "keywords": "checkout crashloopbackoff crashloop restarting restarts oomkilled memory",
     "body": "Fictional incident. Check the failing revision, pod events, previous container logs and the last termination reason. If the reason is OOMKilled, compare peak memory with the container limit and compare the new revision against the last stable one. Confirm readiness and error-rate recovery after any human-approved rollback."
   },
   {
@@ -14,25 +14,25 @@
   {
     "id": "RB-DB-01",
     "title": "PostgreSQL connection pool saturation",
-    "keywords": "postgres postgresql database banco pool connections conexoes rds saturation exhausted",
+    "keywords": "postgres postgresql database pool connections rds saturation exhausted",
     "body": "Fictional incident. Compare pool wait time, open connections and application replica count against the configured database connection limit. Inspect active queries and lock waits. Escalate with the combined connection budget before requesting larger pools or more replicas."
   },
   {
     "id": "RB-QUEUE-01",
     "title": "Order queue backlog keeps growing",
-    "keywords": "queue fila backlog sqs consumer consumers oldest atraso messages mensagens drain",
+    "keywords": "queue backlog sqs consumer consumers oldest delay messages drain",
     "body": "Fictional incident. Compare enqueue and processing rates and the age of the oldest message. Check consumer error rates, recent deployments and dead-letter queue volume. Check the downstream capacity before proposing additional workers."
   },
   {
     "id": "RB-PIPE-01",
     "title": "GitHub Actions is blocked by a Terraform state lock",
-    "keywords": "terraform state lock locked pipeline github actions ci bloqueado trava",
+    "keywords": "terraform state lock locked pipeline github actions ci blocked",
     "body": "Fictional incident. Identify the state backend and correlate the lock owner with running workflows. Wait for the owning workflow to finish or ask the platform team to verify that the lock is stale. Serialize workflows targeting the same state and verify a subsequent plan after remediation."
   },
   {
     "id": "RB-DNS-01",
     "title": "Intermittent DNS failures inside the cluster",
-    "keywords": "dns coredns nxdomain servfail resolution resolving resolucao lookup",
+    "keywords": "dns coredns nxdomain servfail resolution resolving lookup",
     "body": "Fictional incident. Compare queries from affected and healthy pods. Inspect DNS latency, SERVFAIL rates and CoreDNS health. Verify the requested name and namespace, then compare resolver configuration and upstream errors."
   }
 ]

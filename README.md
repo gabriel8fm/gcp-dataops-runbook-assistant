@@ -10,9 +10,10 @@ cluster, execute remediation, or modify infrastructure.
 
 Requires Python 3.11+ with SQLite FTS5 (included in standard Python builds).
 The default mode runs offline and needs no packages or API credentials.
+Examples, runbook content, and answers use US English (en-US).
 
 ```bash
-python3 runbook.py ask "Checkout reiniciando com OOMKilled"
+python3 runbook.py ask "Checkout restarting with OOMKilled"
 python3 runbook.py ask "Ingress responding with 502 after rollout"
 python3 runbook.py evaluate
 python3 -m unittest discover -s tests -v

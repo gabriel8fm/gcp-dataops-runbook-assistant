@@ -1,17 +1,17 @@
 [
   {"question":"Why is checkout in CrashLoopBackOff?", "expected":"RB-K8S-01"},
-  {"question":"Checkout reiniciando com OOMKilled", "expected":"RB-K8S-01"},
+  {"question":"Checkout restarting with OOMKilled", "expected":"RB-K8S-01"},
   {"question":"Ingress responding with 502 after rollout", "expected":"RB-EDGE-01"},
   {"question":"Gateway reports bad upstream", "expected":"RB-EDGE-01"},
   {"question":"PostgreSQL connection pool exhausted", "expected":"RB-DB-01"},
-  {"question":"Banco com pool de conexões esgotado", "expected":"RB-DB-01"},
+  {"question":"Database connection pool is exhausted", "expected":"RB-DB-01"},
   {"question":"SQS oldest message age keeps rising", "expected":"RB-QUEUE-01"},
-  {"question":"Fila com backlog e atraso de mensagens", "expected":"RB-QUEUE-01"},
+  {"question":"Queue backlog and delayed messages", "expected":"RB-QUEUE-01"},
   {"question":"GitHub Actions Terraform state lock", "expected":"RB-PIPE-01"},
-  {"question":"Pipeline bloqueado por trava no Terraform", "expected":"RB-PIPE-01"},
+  {"question":"Pipeline blocked by a Terraform lock", "expected":"RB-PIPE-01"},
   {"question":"CoreDNS returns SERVFAIL for service lookups", "expected":"RB-DNS-01"},
-  {"question":"Falha de resolução DNS dentro do cluster", "expected":"RB-DNS-01"},
+  {"question":"DNS resolution failure inside the cluster", "expected":"RB-DNS-01"},
   {"question":"How do I update my billing address?", "expected":null},
-  {"question":"Qual é a previsão do tempo em Londres?", "expected":null},
+  {"question":"What is the weather forecast for London?", "expected":null},
   {"question":"...?", "expected":null}
 ]
