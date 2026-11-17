@@ -1,0 +1,10 @@
+config {
+  type: "assertion",
+  description: "Keys: an incident_id must belong to exactly one service."
+}
+
+SELECT incident_id, COUNT(DISTINCT service) AS services
+FROM ${ref("incident_events")}
+WHERE incident_id IS NOT NULL
+GROUP BY incident_id
+HAVING COUNT(DISTINCT service) > 1

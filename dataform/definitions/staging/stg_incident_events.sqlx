@@ -1,0 +1,26 @@
+config {
+  type: "view",
+  description: "Typed events with exact redeliveries collapsed. Conflicting payloads for one event_id stay visible so assert_event_id_unique can catch them.",
+  columns: {
+    event_id: "Stable event key.",
+    first_batch_date: "First delivery partition that carried the event.",
+    last_batch_date: "Latest delivery partition that carried the event.",
+    delivery_count: "How many times the same payload was delivered (at-least-once delivery)."
+  }
+}
+
+SELECT
+  event_id,
+  incident_id,
+  sequence,
+  service,
+  severity,
+  status,
+  summary,
+  event_ts,
+  MIN(batch_date) AS first_batch_date,
+  MAX(batch_date) AS last_batch_date,
+  COUNT(*) AS delivery_count
+FROM ${ref("incident_events")}
+WHERE event_id IS NOT NULL
+GROUP BY event_id, incident_id, sequence, service, severity, status, summary, event_ts

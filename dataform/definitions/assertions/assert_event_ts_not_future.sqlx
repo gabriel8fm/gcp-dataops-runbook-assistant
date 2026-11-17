@@ -1,0 +1,10 @@
+config {
+  type: "assertion",
+  description: "Timestamps: no event may be dated after now plus the allowed clock skew."
+}
+
+SELECT event_id, batch_date, event_ts
+FROM ${ref("incident_events")}
+WHERE event_ts > TIMESTAMP_ADD(
+  CURRENT_TIMESTAMP(), INTERVAL ${dataform.projectConfig.vars.clock_skew_minutes} MINUTE
+)

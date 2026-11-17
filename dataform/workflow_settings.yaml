@@ -1,0 +1,13 @@
+# Dataform project for the synthetic incident pipeline.
+# defaultProject is a placeholder; pass --default-database=<project> to the CLI.
+defaultProject: your-gcp-project
+defaultLocation: US
+defaultDataset: incident_analytics
+defaultAssertionDataset: incident_assertions
+dataformCoreVersion: 3.1.3
+vars:
+  raw_dataset: incident_raw
+  freshness_hours: "48"
+  clock_skew_minutes: "5"
+  accepted_severities: critical,high,medium,low
+  accepted_statuses: open,acknowledged,mitigated,resolved

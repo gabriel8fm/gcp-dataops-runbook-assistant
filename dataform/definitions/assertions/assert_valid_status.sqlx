@@ -1,0 +1,13 @@
+config {
+  type: "assertion",
+  description: "Accepted values: status must be one of vars.accepted_statuses."
+}
+
+js {
+  const { quotedList } = require("includes/constants.js");
+}
+
+SELECT event_id, batch_date, status
+FROM ${ref("incident_events")}
+WHERE status IS NOT NULL
+  AND status NOT IN (${quotedList(dataform.projectConfig.vars.accepted_statuses)})

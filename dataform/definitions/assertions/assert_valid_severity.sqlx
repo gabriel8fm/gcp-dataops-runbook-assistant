@@ -1,0 +1,13 @@
+config {
+  type: "assertion",
+  description: "Accepted values: severity must be one of vars.accepted_severities."
+}
+
+js {
+  const { quotedList } = require("includes/constants.js");
+}
+
+SELECT event_id, batch_date, severity
+FROM ${ref("incident_events")}
+WHERE severity IS NOT NULL
+  AND severity NOT IN (${quotedList(dataform.projectConfig.vars.accepted_severities)})

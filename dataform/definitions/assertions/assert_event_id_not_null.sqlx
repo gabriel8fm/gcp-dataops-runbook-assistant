@@ -1,0 +1,8 @@
+config {
+  type: "assertion",
+  description: "Keys: every raw event needs an event_id. Rows returned are failures."
+}
+
+SELECT batch_date, incident_id, sequence
+FROM ${ref("incident_events")}
+WHERE event_id IS NULL

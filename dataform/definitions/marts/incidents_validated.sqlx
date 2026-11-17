@@ -1,0 +1,77 @@
+config {
+  type: "table",
+  dependencies: [
+    "assert_event_id_not_null",
+    "assert_event_id_unique",
+    "assert_required_fields_not_null",
+    "assert_valid_severity",
+    "assert_valid_status",
+    "assert_event_ts_not_future",
+    "assert_incident_single_service",
+    "assert_freshness"
+  ],
+  description: "Current state of each incident. Rebuilt only when every upstream assertion passes, so a failed batch leaves the last good snapshot in place.",
+  bigquery: {
+    partitionBy: "DATE(opened_at)",
+    clusterBy: ["severity", "service"],
+    labels: { app: "runbook-assistant", data: "synthetic" }
+  },
+  assertions: {
+    uniqueKey: ["incident_id"],
+    nonNull: ["incident_id", "service", "severity", "status", "opened_at", "last_event_ts"]
+  },
+  columns: {
+    incident_id: "Stable incident key (INC-YYYYMMDD-NNN).",
+    service: "Owning service.",
+    severity: "critical, high, medium or low (latest event).",
+    status: "Latest lifecycle status.",
+    summary: "Synthetic symptom text used for runbook retrieval.",
+    opened_at: "First event time; partition column.",
+    last_event_ts: "Latest event time, including late arrivals.",
+    is_open: "True until a resolved event arrives.",
+    event_count: "Distinct lifecycle events seen.",
+    last_batch_date: "Latest delivery partition that touched the incident.",
+    _validated_at: "When this snapshot was built."
+  }
+}
+
+WITH ranked AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (
+      PARTITION BY incident_id
+      ORDER BY sequence DESC, event_ts DESC, event_id DESC
+    ) AS position
+  FROM ${ref("stg_incident_events")}
+),
+lifecycle AS (
+  SELECT
+    incident_id,
+    MIN(event_ts) AS opened_at,
+    MIN(IF(status = 'acknowledged', event_ts, NULL)) AS acknowledged_at,
+    MIN(IF(status = 'mitigated', event_ts, NULL)) AS mitigated_at,
+    MIN(IF(status = 'resolved', event_ts, NULL)) AS resolved_at,
+    MAX(event_ts) AS last_event_ts,
+    COUNT(*) AS event_count,
+    MAX(last_batch_date) AS last_batch_date
+  FROM ${ref("stg_incident_events")}
+  GROUP BY incident_id
+)
+SELECT
+  incident_id,
+  ranked.service,
+  ranked.severity,
+  ranked.status,
+  ranked.summary,
+  lifecycle.opened_at,
+  lifecycle.acknowledged_at,
+  lifecycle.mitigated_at,
+  lifecycle.resolved_at,
+  lifecycle.last_event_ts,
+  ranked.status != 'resolved' AS is_open,
+  lifecycle.event_count,
+  lifecycle.last_batch_date,
+  CURRENT_TIMESTAMP() AS _validated_at
+FROM ranked
+JOIN lifecycle USING (incident_id)
+WHERE ranked.position = 1
