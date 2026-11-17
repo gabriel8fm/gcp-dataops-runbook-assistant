@@ -13,8 +13,9 @@ with cited runbooks.
 - **Assistant.** A read-only, parameterized query over the validated table is
   combined with offline runbook retrieval. Answers cite the data source and the
   runbook ID, and the assistant abstains when evidence is missing.
-- **Infrastructure and CI.** Terraform defines the GCP resources. GitHub Actions
-  runs the Python tests, validates Terraform and compiles Dataform without GCP
+- **Infrastructure and CI.** Terraform defines the GCP resources with official
+  `terraform-google-modules` registry modules. GitHub Actions runs the Python
+  tests, validates and plans Terraform, and compiles Dataform without GCP
   credentials.
 
 All incidents, services and runbooks are fictional. The repository holds no
@@ -58,7 +59,7 @@ dataops/bigquery_backend.py BigQuery loads and read-only queries
 dataops/incident_query.py  Question parsing, query catalog, cited answers
 schema/incident_events.json Raw schema shared by Python and Terraform
 dataform/                  Dataform project (declarations, staging, assertions, marts)
-infra/                     Terraform for datasets, raw table, service accounts, IAM
+infra/                     Terraform (registry modules) for APIs, datasets, raw table, service accounts, IAM
 data/runbooks.json         Six fictional runbooks
 data/samples/              Batch with intentional faults
 docs/operations.md         Diagnose failures and reprocess batches
@@ -233,6 +234,22 @@ The person who runs Terraform needs these roles on an existing project:
 | `roles/iam.serviceAccountAdmin` | Create both service accounts and impersonation bindings |
 | `roles/resourcemanager.projectIamAdmin` | Grant `roles/bigquery.jobUser` at project level |
 
+`infra/` composes official registry modules instead of raw resources:
+
+| File | Module | Creates |
+| --- | --- | --- |
+| `services.tf` | `terraform-google-modules/project-factory/google//modules/project_services` | Enables the BigQuery and IAM APIs and keeps them enabled on destroy |
+| `bigquery.tf` | `terraform-google-modules/bigquery/google` (one call per dataset) | `incident_raw` with the partitioned `incident_events` table, `incident_analytics`, `incident_assertions`, and each dataset's access list |
+| `iam.tf` | `terraform-google-modules/service-accounts/google` | Both service accounts (no keys) and their `roles/bigquery.jobUser` grant |
+| `iam.tf` | `terraform-google-modules/iam/google//modules/service_accounts_iam` | Additive impersonation grants for `operator_members` |
+
+Dataset access goes through the bigquery module's `access` list, not additive
+dataset IAM members. The module always writes an authoritative `access` block,
+which would remove additive members on the next apply. Each list keeps
+`projectOwners` as owner and adds only the service accounts that need the
+dataset. Other principals that only have project-level BigQuery roles still
+reach the data through IAM.
+
 Terraform creates two service accounts with no keys:
 
 | Service account | Project role | Dataset roles |
@@ -316,13 +333,13 @@ afterward. Both files are gitignored.
 | BigQuery request contract: partition decorator, `WRITE_TRUNCATE`, typed parameters, byte ceiling | `python3 -m unittest tests.test_bigquery_contract` | Local and CI with `google-cloud-bigquery` and a **mocked client** |
 | Retrieval evaluation (15 questions) | `python3 runbook.py evaluate` | Local and CI |
 | End-to-end offline scenario | `python3 pipeline.py demo` | Local and CI |
-| Terraform | `terraform fmt -check`, `init -backend=false`, `validate`; `tflint` locally | Local and CI |
+| Terraform | `terraform fmt -check`, `init -backend=false`, `validate`, offline `plan` (placeholder project, dummy token, `-refresh=false`); `tflint` locally | Local and CI |
 | Dataform | `npx @dataform/cli@3.1.3 compile dataform` | Local and CI |
 
 The BigQuery contract tests check request shape only. They do not prove
 BigQuery behavior. These steps need a GCP project and have **not** been run:
 
-- `terraform plan` and `terraform apply`
+- `terraform plan` with real credentials, and `terraform apply`
 - Real load jobs into partitions, and partition counts after a rerun
 - `dataform run` against BigQuery, including assertion failures that skip
   `incidents_validated`
@@ -387,6 +404,13 @@ sets `maximum_bytes_billed` to 100 MB, and BigQuery jobs carry the labels
   typed parameters. The reader service account has `dataViewer` on one dataset,
   queries carry a byte ceiling, and table IDs are validated. The model may only
   summarize evidence it was given.
+- **Registry modules over raw resources.** Official `terraform-google-modules`
+  modules carry tested defaults, for example API enablement ordering and keyless
+  service accounts. The trade-off is learning each module's model, such as
+  the authoritative dataset `access` list in the bigquery module. Service
+  account emails are built from known inputs, so the IAM modules can plan
+  `for_each` keys before the accounts exist. CI checks that with an offline
+  plan.
 - **Full rebuild of the validated table.** It is cheap at demo size and simple to
   reason about. At scale, it would become an incremental table that rebuilds only
   the partitions touched by recent batches, and checks would scan only recent

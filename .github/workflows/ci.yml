@@ -32,7 +32,7 @@ jobs:
         run: python -m unittest tests.test_bigquery_contract -v
 
   terraform:
-    name: Terraform fmt and validate
+    name: Terraform fmt, validate and offline plan
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -45,6 +45,15 @@ jobs:
       - run: terraform fmt -check -recursive
       - run: terraform init -backend=false -input=false
       - run: terraform validate
+      # Plans against a placeholder project with a dummy token and no refresh:
+      # proves the module graph resolves (for_each keys, counts) without GCP access.
+      - name: Offline plan (no credentials, no API calls)
+        env:
+          GOOGLE_OAUTH_ACCESS_TOKEN: offline-plan-only
+        run: >-
+          terraform plan -input=false -refresh=false -lock=false
+          -var project_id=ci-placeholder-project
+          -var 'operator_members=["user:operator@example.com"]'
 
   dataform:
     name: Dataform compile
