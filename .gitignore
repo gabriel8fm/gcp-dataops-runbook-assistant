@@ -2,3 +2,25 @@ __pycache__/
 *.pyc
 .venv/
 .env
+.env.*
+.DS_Store
+
+# Local warehouse, landing files and demo output
+.warehouse/
+
+# Terraform state, plans and local variables
+infra/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+infra/terraform.tfvars
+*.auto.tfvars
+
+# Dataform credentials and dependencies
+dataform/.df-credentials.json
+dataform/node_modules/
+
+# Service account keys (never create them; impersonate instead)
+*-key.json
+credentials*.json
