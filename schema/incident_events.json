@@ -1,0 +1,12 @@
+[
+  {"name": "event_id", "type": "STRING", "mode": "NULLABLE", "description": "Stable event key: evt- plus 16 hex chars of sha256(incident_id:sequence). Required by quality checks."},
+  {"name": "incident_id", "type": "STRING", "mode": "NULLABLE", "description": "Stable incident key: INC-YYYYMMDD-NNN. Required."},
+  {"name": "sequence", "type": "INTEGER", "mode": "NULLABLE", "description": "Lifecycle step within the incident, starting at 1. Required."},
+  {"name": "service", "type": "STRING", "mode": "NULLABLE", "description": "Owning service. Required and constant per incident."},
+  {"name": "severity", "type": "STRING", "mode": "NULLABLE", "description": "One of critical, high, medium, low. Required."},
+  {"name": "status", "type": "STRING", "mode": "NULLABLE", "description": "One of open, acknowledged, mitigated, resolved. Required."},
+  {"name": "summary", "type": "STRING", "mode": "NULLABLE", "description": "Synthetic symptom text used to look up a runbook."},
+  {"name": "event_ts", "type": "TIMESTAMP", "mode": "NULLABLE", "description": "When the lifecycle change happened (UTC). Required, must not be in the future."},
+  {"name": "batch_date", "type": "DATE", "mode": "REQUIRED", "description": "Delivery date of the batch that carried the event. Partition column; one batch replaces one partition."},
+  {"name": "ingested_at", "type": "TIMESTAMP", "mode": "REQUIRED", "description": "When the loader wrote the batch (UTC)."}
+]

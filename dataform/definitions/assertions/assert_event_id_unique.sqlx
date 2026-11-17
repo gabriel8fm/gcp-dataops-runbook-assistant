@@ -1,0 +1,9 @@
+config {
+  type: "assertion",
+  description: "Keys: one event_id must map to one payload. Exact redeliveries are allowed."
+}
+
+SELECT event_id, COUNT(*) AS payload_versions
+FROM ${ref("stg_incident_events")}
+GROUP BY event_id
+HAVING COUNT(*) > 1

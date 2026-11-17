@@ -1,0 +1,17 @@
+config {
+  type: "assertion",
+  description: "Freshness: the newest valid event must be newer than vars.freshness_hours."
+}
+
+SELECT latest_event_ts
+FROM (
+  SELECT MAX(event_ts) AS latest_event_ts
+  FROM ${ref("incident_events")}
+  WHERE event_ts <= TIMESTAMP_ADD(
+    CURRENT_TIMESTAMP(), INTERVAL ${dataform.projectConfig.vars.clock_skew_minutes} MINUTE
+  )
+)
+WHERE latest_event_ts IS NULL
+  OR latest_event_ts < TIMESTAMP_SUB(
+    CURRENT_TIMESTAMP(), INTERVAL ${dataform.projectConfig.vars.freshness_hours} HOUR
+  )
